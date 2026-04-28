@@ -1,0 +1,15 @@
+[package]
+name = "ug-read-state"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+scylla = { version = "1.5", features = ["chrono-04"] }
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+serde = { workspace = true, features = ["derive"] }
+ug-db = { path = "../ug-db" }
+ug-error = { path = "../ug-error" }
+
+[lints]
+workspace = true
