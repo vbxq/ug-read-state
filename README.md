@@ -1,6 +1,6 @@
 # ug-read-state
 
-In-process, sharded read-state mutation worker for UG2 (a reimplementation of the Discord backend).
+In-process, sharded read-state mutation worker for Celeste (a reimplementation of the Discord backend).
 
 Read state sits on the hot path : DMs, ACKs, reconnects all touch it constantly.
 
@@ -43,7 +43,7 @@ flowchart LR
 
 ## Background
 
-`read_state_repo` was UG2's original persistence layer for read states, it was a thin repository over Scylla that both the API and the Gateway called directly to read and write `(user_id, channel_id)` records. It worked fine as a CRUD interface, but Scylla is last-write-wins by default, that means that two concurrent writes on the same row don't merge, one just shadows the other.
+`read_state_repo` was Celeste's original persistence layer for read states, it was a thin repository over Scylla that both the API and the Gateway called directly to read and write `(user_id, channel_id)` records. It worked fine as a CRUD interface, but Scylla is last-write-wins by default, that means that two concurrent writes on the same row don't merge, one just shadows the other.
 
 When write volume increased, the failure mode became obvious. DM mention paths were wrapped in Redis locks, and ACK flows did read-modify-write cycles, read the current counter from Scylla, recompute, and write back.
 
@@ -57,7 +57,7 @@ The repo layer still exists for raw persistence, but the API no longer calls it 
 
 Discord described a similar pressure pattern in [Why Discord is switching from Go to Rust](https://discord.com/blog/why-discord-is-switching-from-go-to-rust): per-user state, high write volume, and poor behavior when ordering has to be reconstructed around a last-write-wins store.
 
-The implementation here is specific to UG2, but the design rationale transfers directly.
+The implementation here is specific to Celeste, but the design rationale transfers directly.
 
 ## Architecture
 
