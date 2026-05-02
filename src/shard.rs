@@ -15,7 +15,7 @@ struct CachedReadState {
     last_access: u64,
     pending_delete: bool,
     /// Highest message_id already counted by IncrementMention or fenced by ACK.
-    /// Snowflake IDs are monotonic, replayed increments with the same or older message_id are skipped. 
+    /// Snowflake IDs are monotonic, replayed increments with the same or older message_id are skipped.
     /// Seed from the persisted entry so historical JetStream redeliveries after restart do not re-increment mention_count that has already been flushed to Scylla.
     last_increment_message_id: i64,
 }
@@ -135,13 +135,7 @@ impl ReadStateShard {
                 response,
             } => {
                 let result = self
-                    .apply_ack_and_persist(
-                        user_id,
-                        channel_id,
-                        message_id,
-                        ack_kind,
-                        last_viewed,
-                    )
+                    .apply_ack_and_persist(user_id, channel_id, message_id, ack_kind, last_viewed)
                     .await;
                 if response.send(result).is_err() {
                     tracing::warn!(
@@ -333,7 +327,7 @@ impl ReadStateShard {
         };
         // Detect the first ack to (user, channel) by reading the entry's prior version before the mutation applies.
         // load_or_init hydrates from the Scylla store on a cold cache; a brand-new entry hasversion = 0,
-        // which is our "first ack" signal. 
+        // which is our "first ack" signal.
         // The &mut borrow ends with the block so the follow-up apply_mutation call is free to take &mut self again.
         let prior_version: i64 = {
             match self.load_or_init(user_id, channel_id).await {
@@ -350,7 +344,7 @@ impl ReadStateShard {
         // Persist the client-supplied last_viewed (Discord-epoch-day integer) if the request body carried one.
         // None preserves any prior value.
         // Setting dirty=true is defensive; apply_ack already marks dirty on a successful version advance, but this branch runs only when
-        // the mutation applied, so the entry is already dirty. 
+        // the mutation applied, so the entry is already dirty.
         // The explicit set guards future refactors where that invariant might change.
         if let Some(v) = last_viewed {
             if let Some(cached) = self.entries.get_mut(&(user_id, channel_id)) {

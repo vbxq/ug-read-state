@@ -780,7 +780,10 @@ async fn ack_with_last_viewed_persists_client_supplied_value() {
         Some(4121),
         "ack record must carry the client-supplied last_viewed"
     );
-    assert!(record.first_ack, "first ack for (10, 100) should be flagged");
+    assert!(
+        record.first_ack,
+        "first ack for (10, 100) should be flagged"
+    );
 
     let persisted = store
         .snapshot(10, 100)
